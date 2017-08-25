@@ -23,9 +23,10 @@ func hex2base64(src []byte) []byte {
 
 func binary2base64(src []byte) []byte {
     codetable := "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
+    remainder := len(src) % 3
 
     /* Is src multiple of 3 ? */
-    switch len(src) % 3 {
+    switch remainder {
         case 1:
             src = append(src, 0x00, 0x00)
         case 2:
@@ -47,12 +48,21 @@ func binary2base64(src []byte) []byte {
         result = append(result, codetable[char1], codetable[char2], codetable[char3], codetable[char4])
     }
 
+    switch remainder {
+        case 1:
+            /* Replace last AA with == */
+            result[cap(result)-1] = '='
+            result[cap(result)-2] = '='
+        case 2:
+            result[cap(result)-1] = '='
+    }
+
     return result
 }
 
 func main() {
     test1 := []byte("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d")
-    test2 := []byte("fo")
+    test2 := []byte("foob")
 
     b64 := binary2base64(test2) 
     r := hex2base64(test1) 
